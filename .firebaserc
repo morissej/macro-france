@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "vague-transmission"
+  },
+  "targets": {
+    "vague-transmission": {
+      "hosting": {
+        "competitivite-explorer-fr": [
+          "competitivite-explorer-fr"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
