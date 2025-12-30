@@ -36,7 +36,7 @@ export function CTA({ onOpenAdmin }: CTAProps) {
     };
 
     return (
-        <section id="cta" className="py-20 bg-slate-950 border-t border-slate-800">
+        <section id="cta" className="py-32 bg-slate-950 border-t border-slate-800 relative z-0">
             <div className="max-w-7xl mx-auto px-6 text-center space-y-8">
                 <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.5em]">NexDeal Advisory © 2025 - Vision Stratégique 2035</p>
 
@@ -68,12 +68,13 @@ export function CTA({ onOpenAdmin }: CTAProps) {
                         Linkedin CEOs Pain Points
                     </a>
 
-                    <button
+                    <div
+                        role="button"
                         onClick={onOpenAdmin}
-                        className="px-6 py-3 bg-slate-900 text-slate-500 font-bold rounded-xl text-[10px] uppercase tracking-widest border border-slate-800 hover:text-indigo-400 hover:border-indigo-900/50 transition-colors"
+                        className="relative z-50 px-6 py-3 bg-slate-900 text-slate-500 font-bold rounded-xl text-[10px] uppercase tracking-widest border border-slate-800 hover:text-indigo-400 hover:border-indigo-900/50 transition-colors pointer-events-auto cursor-pointer select-none"
                     >
                         Portail Partenaires
-                    </button>
+                    </div>
                 </div>
             </div>
         </section>

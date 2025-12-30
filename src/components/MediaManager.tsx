@@ -30,7 +30,7 @@ const MediaManager: React.FC = () => {
 
     const fetchFiles = async () => {
         try {
-            const listRef = ref(storage, 'media');
+            const listRef = ref(storage, 'macro_france_media');
             const res = await listAll(listRef);
 
             const filePromises = res.items.map(async (itemRef) => {
@@ -63,7 +63,7 @@ const MediaManager: React.FC = () => {
             const fileExt = file.name.split('.').pop();
             const fileName = `${Math.random()}.${fileExt}`;
 
-            const storageRef = ref(storage, `media/${fileName}`);
+            const storageRef = ref(storage, `macro_france_media/${fileName}`);
             await uploadBytes(storageRef, file);
 
             setSuccess('Fichier téléchargé avec succès !');
@@ -78,7 +78,7 @@ const MediaManager: React.FC = () => {
 
     const deleteFile = async (fileName: string) => {
         try {
-            const deleteRef = ref(storage, `media/${fileName}`);
+            const deleteRef = ref(storage, `macro_france_media/${fileName}`);
             await deleteObject(deleteRef);
             setFiles(files.filter(f => f.name !== fileName));
         } catch (err: any) {

@@ -9,11 +9,12 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
 
 // --- Types ---
-type Sector = "Industry" | "Services" | "Retail" | "Tech" | "Autre";
+type Sector = "Industry" | "Services" | "Retail" | "Tech" | "Transport" | "Autre";
 type CompanySize = "Small" | "Medium" | "Large" | "Corp";
 
 interface Question {
     id: number;
+    context: string; // Explaining WHY we ask this
     text: string;
     options: { label: string; score: number }[];
     weight: Record<Sector, number>;
@@ -32,7 +33,8 @@ const sectors: { label: string; value: Sector }[] = [
     { label: "Services B2B", value: "Services" },
     { label: "Commerce / Retail", value: "Retail" },
     { label: "Tech / SaaS", value: "Tech" },
-    { label: "Autre", value: "Autre" },
+    { label: "Transport / Logistique", value: "Transport" },
+    { label: "Autre / Divers", value: "Autre" },
 ];
 
 const sizes: { label: string; value: CompanySize }[] = [
@@ -45,53 +47,58 @@ const sizes: { label: string; value: CompanySize }[] = [
 const questions: Question[] = [
     {
         id: 1,
-        text: "Comment situez-vous vos prix par rapport à la concurrence ?",
+        context: "Le pricing power est le premier indicateur de la valeur perçue par vos clients.",
+        text: "Comment vos prix se situent-ils par rapport à vos principaux concurrents directs ?",
         options: [
-            { label: "Plus bas (Low cost)", score: 10 },
-            { label: "Alignés", score: 20 },
-            { label: "Plus élevés (Premium)", score: 30 },
+            { label: "Plus bas : Nous jouons sur la compétitivité coût / volume.", score: 10 },
+            { label: "Alignés : Nous suivons les prix du marché.", score: 20 },
+            { label: "Premium : Nos prix sont supérieurs, justifiés par la valeur.", score: 30 },
         ],
-        weight: { Industry: 1.2, Services: 1, Retail: 1.5, Tech: 0.8, Autre: 1.0 }
+        weight: { Industry: 1.2, Services: 1, Retail: 1.5, Tech: 0.8, Transport: 1.4, Autre: 1.0 }
     },
     {
         id: 2,
-        text: "Quelle est votre position sur votre marché ?",
+        context: "La dynamique de parts de marché révèle votre momentum commercial.",
+        text: "Quelle est votre position actuelle sur votre marché principal ?",
         options: [
-            { label: "Challenger / Petit", score: 5 },
-            { label: "Moyenne / Équivalent", score: 15 },
-            { label: "Leader / Dominant", score: 25 },
+            { label: "Challenger : Petite part de marché, en conquête.", score: 5 },
+            { label: "Établi : Acteur solide parmi d'autres.", score: 15 },
+            { label: "Leader : Position dominante ou numéro 1.", score: 25 },
         ],
-        weight: { Industry: 1.5, Services: 1, Retail: 1.2, Tech: 2.0, Autre: 1.0 }
+        weight: { Industry: 1.5, Services: 1, Retail: 1.2, Tech: 2.0, Transport: 1.3, Autre: 1.0 }
     },
     {
         id: 3,
-        text: "Quelle part de CA réalisez-vous à l'export ?",
+        context: "L'indépendance vis-à-vis du cycle économique national est cruciale pour la valorisation.",
+        text: "Quelle part de votre Chiffre d'Affaires réalisez-vous à l'international ?",
         options: [
-            { label: "Nulle (< 5%)", score: 5 },
-            { label: "Opportuniste (5-20%)", score: 15 },
-            { label: "Structurelle (> 20%)", score: 25 },
+            { label: "Nulle : < 5% (Exclusivement domestique)", score: 5 },
+            { label: "Opportuniste : 5-20% (Quelques clients étrangers)", score: 15 },
+            { label: "Structurelle : > 20% (Présence internationale établie)", score: 25 },
         ],
-        weight: { Industry: 1.5, Services: 0.8, Retail: 0.5, Tech: 1.2, Autre: 1.0 }
+        weight: { Industry: 1.5, Services: 0.8, Retail: 0.5, Tech: 1.2, Transport: 1.0, Autre: 1.0 }
     },
     {
         id: 4,
-        text: "Niveau de digitalisation des opérations ?",
+        context: "L'efficience opérationnelle moderne repose sur la donnée.",
+        text: "Quel est le niveau de digitalisation et d'automatisation de vos opérations ?",
         options: [
-            { label: "Basique (Excel/Papier)", score: 5 },
-            { label: "Intermédiaire (ERP)", score: 15 },
-            { label: "Avancé (Data/IA/Auto)", score: 25 },
+            { label: "Basique : Pilotage manuel, Excel prédominant.", score: 5 },
+            { label: "Intermédiaire : ERP en place, process structurés.", score: 15 },
+            { label: "Avancé : Pilotage par la donnée, IA, automatisation forte.", score: 25 },
         ],
-        weight: { Industry: 1.3, Services: 1.2, Retail: 1.0, Tech: 0.5, Autre: 1.0 }
+        weight: { Industry: 1.3, Services: 1.2, Retail: 1.0, Tech: 0.5, Transport: 1.5, Autre: 1.0 }
     },
     {
         id: 5,
-        text: "Part du CA réinvestie en innovation/R&D ?",
+        context: "L'investissement aujourd'hui détermine la croissance de demain.",
+        text: "Quelle part de votre budget consacrez-vous à l'innovation ou à la R&D ?",
         options: [
-            { label: "Faible (< 2%)", score: 0 },
-            { label: "Moyenne (2-5%)", score: 15 },
-            { label: "Forte (> 5%)", score: 25 },
+            { label: "Faible (< 2%) : Maintien de l'existant.", score: 0 },
+            { label: "Moyenne (2-5%) : Amélioration continue.", score: 15 },
+            { label: "Forte (> 5%) : Innovation de rupture et nouveaux produits.", score: 25 },
         ],
-        weight: { Industry: 1.2, Services: 1.0, Retail: 0.8, Tech: 2.5, Autre: 1.0 }
+        weight: { Industry: 1.2, Services: 1.0, Retail: 0.8, Tech: 2.5, Transport: 1.0, Autre: 1.0 }
     },
 ];
 
@@ -185,7 +192,16 @@ export function CompetitivenessBot() {
                 addMessage("bot", "Quelle est la taille de votre entreprise (CA annuel) ?");
             } else if (nextStep >= 3 && nextStep < 3 + questions.length) { // 3 to 7
                 const qIndex = nextStep - 3;
-                addMessage("bot", questions[qIndex].text);
+                const q = questions[qIndex];
+
+                // Add Context first
+                addMessage("bot", <span className="italic text-indigo-600 block mb-1 font-medium">{q.context}</span>);
+
+                // Then ask the question after a small delay
+                setTimeout(() => {
+                    addMessage("bot", q.text);
+                }, 600);
+
             } else if (nextStep === 3 + questions.length) { // 8 => Lead Form
                 addMessage("bot", "Analyse presque terminée ! Pour générer votre rapport personnalisé, j'ai besoin de quelques infos :");
             } else { // 9 => Result
@@ -194,21 +210,66 @@ export function CompetitivenessBot() {
         }, 800);
     };
 
+    const generateDetailedReport = (ratio: number, sector: Sector | null, size: CompanySize | null) => {
+        if (!sector || !size) return "Analyse incomplète.";
+
+        let analysis = "";
+
+        // Intro based on Score
+        if (ratio < 40) {
+            analysis += `Votre score de ${Math.round(ratio)}/100 révèle une fragilité structurelle importante. `;
+        } else if (ratio < 75) {
+            analysis += `Votre score de ${Math.round(ratio)}/100 indique une entreprise résiliente mais perfectible. `;
+        } else {
+            analysis += `Votre score exceptionnel de ${Math.round(ratio)}/100 vous place en position de leader. `;
+        }
+
+        // Sector Specifics
+        if (sector === "Industry") {
+            if (ratio < 60) analysis += "Dans l'industrie, cela signale souvent un sous-investissement productif ou une exposition trop forte aux coûts de l'énergie et des matières premières. ";
+            else analysis += "Votre outil industriel semble performant, ce qui est une barrière à l'entrée majeure pour vos concurrents. ";
+        } else if (sector === "Tech") {
+            if (ratio < 60) analysis += "Pour une Tech, ce score suggère un Product-Market Fit encore incertain ou un taux de churn trop élevé. La scalabilité semble freinée. ";
+            else analysis += "Vous avez craqué le code de la croissance rentable. La priorité est maintenant de vérouiller vos parts de marché. ";
+        } else if (sector === "Retail") {
+            if (ratio < 60) analysis += "Le Retail ne pardonne pas : vos marges sont probablement sous pression face aux géants ou au e-commerce. ";
+            else analysis += "Votre marque est forte et votre fidélisation client fonctionne. C'est un actif immatériel clé pour la valorisation. ";
+        } else if (sector === "Transport") {
+            if (ratio < 60) analysis += "Le secteur Transport est impitoyable sur les marges. Votre structure de coûts semble trop lourde par rapport aux standards du marché. ";
+            else analysis += "Votre optimisation logistique est un avantage compétitif durable qui maximise votre EBITDA. ";
+        } else {
+            analysis += "Votre modèle économique présente des spécificités qui méritent une analyse plus fine de vos leviers de marge. ";
+        }
+
+        // Size Specifics
+        if (size === "Small") {
+            analysis += "En tant que TPE, votre priorité absolue doit être la sécurisation du cash pour financer ce pivot.";
+        } else if (size === "Medium" || size === "Large") {
+            analysis += "À votre échelle, la structuration du management intermédiaire et la digitalisation sont les leviers les plus rapides pour gagner les 10 points manquants.";
+        } else {
+            analysis += "Pour un groupe de votre taille, la croissance externe est désormais le levier le plus rationnel pour continuer à croître.";
+        }
+
+        return analysis;
+    };
+
     const saveToFirebase = async () => {
         const ratio = (score / maxPossibleScore) * 100;
-        let diagnosis = getDiagnosis(ratio).title;
+        let diagnosisTitle = getDiagnosis(ratio).title;
+        let detailedReport = generateDetailedReport(ratio, sector, size);
 
         try {
-            await addDoc(collection(db, "diagnostics"), {
+            await addDoc(collection(db, "macro_france_diagnostics"), {
                 created_at: new Date().toISOString(),
                 user_name: leadName || "Anonyme",
                 title: leadRole || "N/A",
                 company: size || "N/A",
                 website: leadUrl || "",
                 score: Math.round(ratio),
-                diagnostic: diagnosis,
-                transcript: transcript,
-                sector: sector
+                diagnostic: detailedReport, // Saving full report here
+                transcript: transcript, // Keeping transcript for Q&A
+                sector: sector,
+                diagnosis_title: diagnosisTitle // Saving title separately if needed
             });
         } catch (e) {
             console.error("Error saving to DB", e);
@@ -224,9 +285,10 @@ export function CompetitivenessBot() {
     const showResult = () => {
         const ratio = (score / maxPossibleScore) * 100;
         const { title, rec, color } = getDiagnosis(ratio);
+        const detailedAnalysis = generateDetailedReport(ratio, sector, size);
 
         const resultCard = (
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-2 space-y-3">
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-2 space-y-4">
                 <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-bold uppercase text-slate-500">Score IA</span>
                     <span className={cn("text-xl font-black", color === "emerald" ? "text-emerald-600" : color === "amber" ? "text-amber-500" : "text-red-500")}>
@@ -239,18 +301,23 @@ export function CompetitivenessBot() {
 
                 <div className="space-y-1">
                     <div className="flex items-start gap-2">
-                        <TrendingUp className="w-4 h-4 text-slate-400 mt-1" />
-                        <p className="text-sm text-slate-700 font-medium">{title}</p>
+                        <TrendingUp className="w-4 h-4 text-slate-400 mt-1 shrink-0" />
+                        <p className="text-sm text-slate-700 font-bold">{title}</p>
                     </div>
-                    <div className="flex items-start gap-2">
-                        <Briefcase className="w-4 h-4 text-indigo-500 mt-1" />
-                        <p className="text-sm text-indigo-700 font-bold">{rec}</p>
-                    </div>
+                </div>
+
+                <div className="bg-white p-3 rounded-lg border border-slate-100 text-xs text-slate-600 leading-relaxed text-justify">
+                    {detailedAnalysis}
+                </div>
+
+                <div className="flex items-start gap-2 pt-2 border-t border-slate-200">
+                    <Briefcase className="w-4 h-4 text-indigo-500 mt-1 shrink-0" />
+                    <p className="text-xs text-indigo-700 font-bold">{rec}</p>
                 </div>
             </div>
         );
 
-        addMessage("bot", "Analyse complétée. Voici mon diagnostic stratégique :");
+        addMessage("bot", "Analyse complétée. Voici mon diagnostic stratégique détaillé :");
         setTimeout(() => addMessage("bot", resultCard), 600);
     };
 
@@ -268,14 +335,14 @@ export function CompetitivenessBot() {
 
     return (
         <>
-            <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-4">
+            <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-4 pointer-events-none">
                 <AnimatePresence>
                     {isOpen && (
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="w-full max-w-[380px] sm:w-[380px] h-[600px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden font-sans"
+                            className="w-full max-w-[380px] sm:w-[380px] h-[650px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden font-sans pointer-events-auto"
                         >
                             {/* Simple Header */}
                             <div className="bg-slate-900 text-white p-4 flex justify-between items-center shadow-md">
@@ -446,7 +513,7 @@ export function CompetitivenessBot() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setIsOpen(true)}
-                        className="group flex items-center gap-3 pr-6 pl-2 py-2 bg-white rounded-full shadow-2xl border border-slate-100 cursor-pointer hover:border-indigo-100 transition-all"
+                        className="group flex items-center gap-3 pr-6 pl-2 py-2 bg-white rounded-full shadow-2xl border border-slate-100 cursor-pointer hover:border-indigo-100 transition-all pointer-events-auto"
                     >
                         <div className="h-12 w-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg group-hover:bg-indigo-700 transition-colors">
                             <MessageSquare className="h-6 w-6" />
@@ -461,3 +528,4 @@ export function CompetitivenessBot() {
         </>
     );
 }
+

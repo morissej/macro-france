@@ -24,7 +24,7 @@ const PublicResources: React.FC = () => {
     useEffect(() => {
         const fetchFiles = async () => {
             try {
-                const listRef = ref(storage, 'media');
+                const listRef = ref(storage, 'macro_france_media');
                 const res = await listAll(listRef);
 
                 // Get all URLs
@@ -39,8 +39,8 @@ const PublicResources: React.FC = () => {
 
                 const allFiles = await Promise.all(filePromises);
 
-                // Sort or filter if needed (simple slice for now)
-                setFiles(allFiles.slice(0, 3));
+                // Sort by name or date if metadata serves, for now just show all found
+                setFiles(allFiles);
             } catch (e) {
                 console.error("Failed to load resources", e);
             }
@@ -49,21 +49,7 @@ const PublicResources: React.FC = () => {
         fetchFiles();
     }, []);
 
-    // Demo files to ensure the UI looks populated as requested
-    const DEMO_FILES: MediaFile[] = [
-        { name: "La Vague Silencieuse (Infographie)", type: 'image', url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        { name: "La Vague des Transmissions (Vidéo)", type: 'video', url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' },
-        { name: "La Feuille de Route (Présentation)", type: 'pdf', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
-    ];
-
-    // Combine real files with demo files to fill the grid up to 3
-    const displayFiles = [...files];
-    if (displayFiles.length < 3) {
-        // Fill the rest with demo files
-        for (let i = files.length; i < 3; i++) {
-            displayFiles.push(DEMO_FILES[i]);
-        }
-    }
+    const displayFiles = files;
 
     return (
         <section className="py-12 px-6">

@@ -18,7 +18,7 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const fetchEntries = async () => {
         try {
             // Fetch from Firestore
-            const q = query(collection(db, "diagnostics"), orderBy("created_at", "desc"));
+            const q = query(collection(db, "macro_france_diagnostics"), orderBy("created_at", "desc"));
             const querySnapshot = await getDocs(q);
 
             const mappedData: DiagnosticEntry[] = querySnapshot.docs.map(doc => ({
@@ -48,7 +48,7 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const deleteEntry = async (id: string) => {
         if (!confirm("Voulez-vous vraiment supprimer ce diagnostic de la base ?")) return;
         try {
-            await deleteDoc(doc(db, "diagnostics", id));
+            await deleteDoc(doc(db, "macro_france_diagnostics", id));
             setEntries(entries.filter(e => e.id !== id));
         } catch (e) {
             console.error("Delete failed:", e);
