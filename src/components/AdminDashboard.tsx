@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import Papa from 'papaparse';
 import { db } from '../lib/firebase';
 import { collection, query, orderBy, getDocs, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { DiagnosticEntry } from '../types';
 import { Database, Download, Trash2, X, Eye, FileText, Globe } from 'lucide-react';
 import MediaManager from './MediaManager';
+
+// Prevent CSV formula injection in spreadsheet apps (=, +, -, @, tab, CR).
+const sanitizeForCsv = (value: string): string => {
+    if (!value) return '';
+    return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+};
 
 const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [entries, setEntries] = useState<DiagnosticEntry[]>([]);
@@ -59,25 +66,25 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const downloadCSV = () => {
         if (entries.length === 0) return;
 
-        const headers = ['Date', 'Nom', 'Titre', 'Entreprise', 'Site Web', 'Score', 'Synthese', 'Compte Rendu Detaille'];
-        const rows = entries.map(e => [
-            new Date(e.timestamp).toLocaleString(),
-            `"${e.userName.replace(/"/g, '""')}"`,
-            `"${e.title?.replace(/"/g, '""') || ''}"`,
-            `"${e.company.replace(/"/g, '""')}"`,
-            `"${e.website?.replace(/"/g, '""') || ''}"`,
-            e.score,
-            `"${e.diagnostic.replace(/"/g, '""')}"`,
-            `"${(e.transcript || '').replace(/"/g, '""')}"`
-        ]);
+        const rows = entries.map(e => ({
+            Date: sanitizeForCsv(new Date(e.timestamp).toLocaleString()),
+            Nom: sanitizeForCsv(e.userName ?? ''),
+            Titre: sanitizeForCsv(e.title ?? ''),
+            Entreprise: sanitizeForCsv(e.company ?? ''),
+            'Site Web': sanitizeForCsv(e.website ?? ''),
+            Score: e.score,
+            Synthese: sanitizeForCsv(e.diagnostic ?? ''),
+            'Compte Rendu Detaille': sanitizeForCsv(e.transcript ?? ''),
+        }));
 
-        const csvContent = [headers, ...rows].map(r => r.join(',')).join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const csvContent = Papa.unparse(rows, { quotes: true });
+        const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.setAttribute('href', url);
         link.setAttribute('download', `base_donnees_nexdeal_${new Date().toISOString().split('T')[0]}.csv`);
         link.click();
+        URL.revokeObjectURL(url);
     };
 
     return (
