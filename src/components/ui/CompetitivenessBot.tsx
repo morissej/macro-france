@@ -174,8 +174,7 @@ export function CompetitivenessBot() {
     };
 
     const addMessage = (sender: "bot" | "user", text: React.ReactNode) => {
-        const id = Math.random().toString(36).substring(7);
-        setMessages(prev => [...prev, { id, sender, text }]);
+        setMessages(prev => [...prev, { id: crypto.randomUUID(), sender, text }]);
     };
 
     const processStep = (nextStep: number) => {
@@ -255,8 +254,8 @@ export function CompetitivenessBot() {
 
     const saveToFirebase = async () => {
         const ratio = (score / maxPossibleScore) * 100;
-        let diagnosisTitle = getDiagnosis(ratio).title;
-        let detailedReport = generateDetailedReport(ratio, sector, size);
+        const diagnosisTitle = getDiagnosis(ratio).title;
+        const detailedReport = generateDetailedReport(ratio, sector, size);
 
         try {
             await addDoc(collection(db, "macro_france_diagnostics"), {

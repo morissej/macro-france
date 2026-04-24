@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { storage } from '../lib/firebase';
 import { ref, listAll, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
 import { Upload, Trash2, Image, Link as LinkIcon, AlertCircle, Check, FileText, Play, X, Eye } from 'lucide-react';
@@ -24,11 +24,7 @@ const MediaManager: React.FC = () => {
     const [success, setSuccess] = useState<string | null>(null);
     const [viewingFile, setViewingFile] = useState<MediaFile | null>(null);
 
-    useEffect(() => {
-        fetchFiles();
-    }, []);
-
-    const fetchFiles = async () => {
+    const fetchFiles = useCallback(async () => {
         try {
             const listRef = ref(storage, 'macro_france_media');
             const res = await listAll(listRef);
@@ -45,9 +41,12 @@ const MediaManager: React.FC = () => {
             setFiles(fileData);
         } catch (err) {
             console.error('Error fetching files:', err);
-            // setError('Impossible de charger les fichiers. Vérifiez que le bucket "media" existe et est public.');
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchFiles();
+    }, [fetchFiles]);
 
     const ALLOWED_MIME_TYPES = new Set([
         'image/png',

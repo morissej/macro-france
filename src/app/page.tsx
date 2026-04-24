@@ -45,10 +45,6 @@ export default function Home() {
     return () => unsub();
   }, []);
 
-  useEffect(() => {
-    if (isAdmin) setShowLogin(false);
-  }, [isAdmin]);
-
   const showAdmin = user !== null && isAdmin;
 
   const handleCloseDashboard = async () => {
