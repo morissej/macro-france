@@ -1,16 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, BarChart2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export function Hero() {
     const scrollToParadoxe = () => {
         document.getElementById("global-competitiveness")?.scrollIntoView({ behavior: "smooth" });
-    };
-
-    const scrollToWaterfall = () => {
-        document.getElementById("waterfall")?.scrollIntoView({ behavior: "smooth" });
     };
 
     return (

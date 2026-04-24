@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
-import { useAppStore } from '@/lib/store';
-import { cn } from '@/lib/utils';
 
 interface DataPoint {
     year: number;
@@ -62,9 +60,7 @@ export function LineDualAxis({ data, series, height = 400 }: LineDualAxisProps) 
             .attr("color", "#94a3b8")
             .select(".domain").remove();
 
-        // Y Axis logic
-        const leftSeries = series.filter(s => s.axis !== 'right');
-        const rightSeries = series.filter(s => s.axis === 'right');
+        // Y Axis logic (dual-axis scaffolding retained for future use)
 
         // Currently handling single scale logic simplicity for demo if needed, but dual axis requested
         // Let's assume extent for both or normalize logic if separate

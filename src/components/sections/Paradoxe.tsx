@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { useScroll, useTransform, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAppStore } from "@/lib/store";
 import { LineDualAxis } from "@/components/charts/LineDualAxis";
 import { datasets } from "@/lib/data";

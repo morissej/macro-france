@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, X, Send, Bot, RefreshCcw, Briefcase, TrendingUp, AlertTriangle, ShieldCheck, PlayCircle, User, Globe, Building2 } from "lucide-react";
+import { MessageSquare, X, Bot, RefreshCcw, Briefcase, TrendingUp, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { db } from "@/lib/firebase";

@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
 import { Calculator, Clock, Euro } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 export function ROISimulator() {
     const [cost, setCost] = useState(100); // k€

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { collection, query, orderBy, getDocs, addDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { DiagnosticEntry } from '../types';
-import { Database, Download, Trash2, X, Eye, FileText, Globe, UploadCloud, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Database, Download, Trash2, X, Eye, FileText, Globe } from 'lucide-react';
 import MediaManager from './MediaManager';
 
 const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {

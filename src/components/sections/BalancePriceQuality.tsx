@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Scale, TrendingUp, DollarSign } from "lucide-react";
+import { TrendingUp, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function BalancePriceQuality() {
