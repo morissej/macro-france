@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function isValidDiagnostic(data) {
+      return data.keys().hasAll(['created_at', 'user_name', 'score'])
+        && data.user_name is string && data.user_name.size() <= 200
+        && data.score is number && data.score >= 0 && data.score <= 100
+        && (!('title' in data) || (data.title is string && data.title.size() <= 200))
+        && (!('company' in data) || (data.company is string && data.company.size() <= 200))
+        && (!('website' in data) || (data.website is string && data.website.size() <= 500))
+        && (!('sector' in data) || (data.sector is string && data.sector.size() <= 200))
+        && (!('diagnosis_title' in data) || (data.diagnosis_title is string && data.diagnosis_title.size() <= 200))
+        && (!('diagnostic' in data) || (data.diagnostic is string && data.diagnostic.size() <= 20000))
+        && (!('transcript' in data) || (data.transcript is string && data.transcript.size() <= 50000));
+    }
+
+    match /macro_france_diagnostics/{docId} {
+      allow create: if isValidDiagnostic(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /stats/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
