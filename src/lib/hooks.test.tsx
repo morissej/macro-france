@@ -19,8 +19,7 @@ describe("useScrollSpy", () => {
             rootMargin = "";
             thresholds = [];
         }
-        // @ts-expect-error assigning mock to global
-        globalThis.IntersectionObserver = MockIO;
+        (globalThis as unknown as { IntersectionObserver: typeof MockIO }).IntersectionObserver = MockIO;
     });
 
     it("observes every section id that exists in the DOM", () => {
