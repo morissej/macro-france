@@ -49,6 +49,24 @@ const MediaManager: React.FC = () => {
         }
     };
 
+    const ALLOWED_MIME_TYPES = new Set([
+        'image/png',
+        'image/jpeg',
+        'image/webp',
+        'image/gif',
+        'video/mp4',
+        'application/pdf',
+    ]);
+    const MIME_TO_EXT: Record<string, string> = {
+        'image/png': 'png',
+        'image/jpeg': 'jpg',
+        'image/webp': 'webp',
+        'image/gif': 'gif',
+        'video/mp4': 'mp4',
+        'application/pdf': 'pdf',
+    };
+    const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
     const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
         try {
             setUploading(true);
@@ -60,19 +78,32 @@ const MediaManager: React.FC = () => {
             }
 
             const file = event.target.files[0];
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+
+            if (!ALLOWED_MIME_TYPES.has(file.type)) {
+                throw new Error(
+                    'Type de fichier non autorisé. Formats acceptés : PNG, JPEG, WEBP, GIF, MP4, PDF.'
+                );
+            }
+            if (file.size > MAX_SIZE_BYTES) {
+                throw new Error('Fichier trop volumineux (max 10 Mo).');
+            }
+
+            const ext = MIME_TO_EXT[file.type] ?? 'bin';
+            const fileName = `${crypto.randomUUID()}.${ext}`;
 
             const storageRef = ref(storage, `macro_france_media/${fileName}`);
-            await uploadBytes(storageRef, file);
+            await uploadBytes(storageRef, file, { contentType: file.type });
 
             setSuccess('Fichier téléchargé avec succès !');
             fetchFiles();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error uploading:', err);
-            setError(err.message || 'Erreur lors du téléchargement.');
+            const message = err instanceof Error ? err.message : 'Erreur lors du téléchargement.';
+            setError(message);
         } finally {
             setUploading(false);
+            // Reset the input so the same file can be selected again after an error.
+            event.target.value = '';
         }
     };
 
@@ -81,9 +112,10 @@ const MediaManager: React.FC = () => {
             const deleteRef = ref(storage, `macro_france_media/${fileName}`);
             await deleteObject(deleteRef);
             setFiles(files.filter(f => f.name !== fileName));
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error deleting:', err);
-            setError('Erreur lors de la suppression.');
+            const message = err instanceof Error ? err.message : 'Erreur lors de la suppression.';
+            setError(message);
         }
     };
 
@@ -103,8 +135,9 @@ const MediaManager: React.FC = () => {
                 <div className="relative">
                     <input
                         type="file"
-                        accept="image/png,image/jpeg,video/mp4,application/pdf"
+                        accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,application/pdf"
                         onChange={uploadFile}
+                        aria-label="Uploader un fichier (max 10 Mo)"
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         disabled={uploading}
                     />
