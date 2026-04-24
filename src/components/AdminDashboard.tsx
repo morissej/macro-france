@@ -93,9 +93,11 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     </div>
                     <button
                         onClick={onClose}
+                        aria-label="Se déconnecter et fermer"
+                        title="Se déconnecter"
                         className="p-2 hover:bg-gray-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
                     >
-                        <X className="w-8 h-8" />
+                        <X className="w-8 h-8" aria-hidden="true" />
                     </button>
                 </div>
 

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { onAuthStateChanged, signOut, type User } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { FloatingNav } from "@/components/ui/floating-nav";
 import { Hero } from "@/components/sections/Hero";
 import { CTA } from "@/components/sections/CTA";
@@ -14,7 +16,7 @@ import { BotSection } from "@/components/sections/BotSection";
 import { ScaleBenefits } from "@/components/sections/ScaleBenefits";
 import PublicResources from "@/components/PublicResources";
 import AdminDashboard from "@/components/AdminDashboard";
-import { Lock } from "lucide-react";
+import AdminLogin from "@/components/AdminLogin";
 
 export default function Home() {
   useScrollSpy([
@@ -22,17 +24,39 @@ export default function Home() {
     "duel-pme", "bot-section", "scale-benefits", "cta"
   ]);
 
-  const [showAdmin, setShowAdmin] = useState(false);
-  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
-  const [password, setPassword] = useState("");
+  const [showLogin, setShowLogin] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const handleAdminAuth = () => {
-    if (password === "65350000") {
-      setShowAdmin(true);
-      setShowPasswordPrompt(false);
-      setPassword("");
-    } else {
-      alert("Mot de passe incorrect");
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (next) => {
+      setUser(next);
+      if (next) {
+        try {
+          const token = await next.getIdTokenResult(true);
+          setIsAdmin(token.claims.admin === true);
+        } catch {
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    if (isAdmin) setShowLogin(false);
+  }, [isAdmin]);
+
+  const showAdmin = user !== null && isAdmin;
+
+  const handleCloseDashboard = async () => {
+    setShowLogin(false);
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error("Sign out failed:", err);
     }
   };
 
@@ -47,51 +71,16 @@ export default function Home() {
         <BotSection />
         <ScaleBenefits />
         <PublicResources />
-        <CTA onOpenAdmin={() => setShowPasswordPrompt(true)} />
+        <CTA onOpenAdmin={() => setShowLogin(true)} />
       </div>
       <ModalContainer />
       <CompetitivenessBot />
 
-      {/* Password Prompt Modal */}
-      {showPasswordPrompt && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 p-8 rounded-2xl w-full max-w-sm text-center">
-            <div className="bg-indigo-500/10 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <Lock className="w-8 h-8 text-indigo-400" />
-            </div>
-            <h3 className="text-white font-bold text-xl mb-2">Espace Partenaire</h3>
-            <p className="text-slate-400 text-sm mb-6">Accès réservé aux administrateurs NexDeal.</p>
-
-            <input
-              type="password"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white mb-4 focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-600 font-mono text-center tracking-widest"
-              placeholder="Passcode"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoFocus
-              onKeyDown={(e) => e.key === 'Enter' && handleAdminAuth()}
-            />
-
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setShowPasswordPrompt(false)}
-                className="py-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors font-medium text-sm"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleAdminAuth}
-                className="py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm transition-colors"
-              >
-                Accéder
-              </button>
-            </div>
-          </div>
-        </div>
+      {showLogin && !showAdmin && (
+        <AdminLogin onCancel={() => setShowLogin(false)} />
       )}
 
-      {/* Admin Dashboard */}
-      {showAdmin && <AdminDashboard onClose={() => setShowAdmin(false)} />}
+      {showAdmin && <AdminDashboard onClose={handleCloseDashboard} />}
     </main>
   );
 }
