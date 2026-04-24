@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
       "react-hooks/set-state-in-effect": "off",
       // French copy uses many apostrophes/quotes; escaping each one hurts readability.
       "react/no-unescaped-entities": "off",
+      // Static export with images.unoptimized: next/image provides no benefit here.
+      "@next/next/no-img-element": "off",
     },
   },
   // Override default ignores of eslint-config-next.

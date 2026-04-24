@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { storage } from '../lib/firebase';
 import { ref, listAll, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
-import { Upload, Trash2, Image, Link as LinkIcon, AlertCircle, Check, FileText, Play, X, Eye } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Link as LinkIcon, AlertCircle, Check, FileText, Play, X, Eye } from 'lucide-react';
 
 interface MediaFile {
     name: string;
@@ -128,7 +128,7 @@ const MediaManager: React.FC = () => {
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl w-full text-slate-200">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold flex items-center gap-2">
-                    <Image className="w-6 h-6 text-indigo-500" />
+                    <ImageIcon className="w-6 h-6 text-indigo-500" aria-hidden="true" />
                     Médiathèque (PNG, MP4, PDF)
                 </h2>
                 <div className="relative">
@@ -172,7 +172,7 @@ const MediaManager: React.FC = () => {
 
             {files.length === 0 ? (
                 <div className="text-center py-12 text-slate-500 bg-slate-950/50 rounded-xl border border-dashed border-slate-800">
-                    <Image className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                    <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-20" aria-hidden="true" />
                     <p>Aucun fichier dans la bibliothèque.</p>
                     <p className="text-xs mt-1">Uploadez des images, vidéos ou PDF pour les utiliser.</p>
                 </div>
@@ -231,7 +231,7 @@ const MediaManager: React.FC = () => {
                             <div className="p-2 text-xs text-slate-400 truncate border-t border-slate-800 flex items-center gap-2">
                                 {file.type === 'video' && <Play className="w-3 h-3 text-indigo-500 flex-shrink-0" />}
                                 {file.type === 'pdf' && <FileText className="w-3 h-3 text-red-500 flex-shrink-0" />}
-                                {file.type === 'image' && <Image className="w-3 h-3 text-emerald-500 flex-shrink-0" />}
+                                {file.type === 'image' && <ImageIcon className="w-3 h-3 text-emerald-500 flex-shrink-0" aria-hidden="true" />}
                                 <span className="truncate">{file.name}</span>
                             </div>
                         </div>
