@@ -5,12 +5,7 @@ import { collection, query, orderBy, getDocs, deleteDoc, doc, getDoc } from 'fir
 import { DiagnosticEntry } from '../types';
 import { Database, Download, Trash2, X, Eye, FileText, Globe } from 'lucide-react';
 import MediaManager from './MediaManager';
-
-// Prevent CSV formula injection in spreadsheet apps (=, +, -, @, tab, CR).
-const sanitizeForCsv = (value: string): string => {
-    if (!value) return '';
-    return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
-};
+import { sanitizeForCsv } from '../lib/csv';
 
 const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [entries, setEntries] = useState<DiagnosticEntry[]>([]);
