@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { motion } from "framer-motion";
 import { Scale, FileText, Factory, Users, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,7 +53,7 @@ export function CausesGrid() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {causes.map((cause, idx) => (
                         <motion.div
-                            key={idx}
+                            key={cause.title}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 }}

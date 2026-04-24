@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Papa from 'papaparse';
 import { db } from '../lib/firebase';
-import { collection, query, orderBy, getDocs, addDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { DiagnosticEntry } from '../types';
-import { Database, Download, Trash2, X, Eye, FileText, Globe, UploadCloud, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Database, Download, Trash2, X, Eye, FileText, Globe } from 'lucide-react';
 import MediaManager from './MediaManager';
+import { sanitizeForCsv } from '../lib/csv';
 
 const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [entries, setEntries] = useState<DiagnosticEntry[]>([]);
@@ -11,26 +13,22 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [visitCount, setVisitCount] = useState<number>(0);
 
 
-    useEffect(() => {
-        fetchEntries();
-    }, []);
-
-    const fetchEntries = async () => {
+    const fetchEntries = useCallback(async () => {
         try {
             // Fetch from Firestore
             const q = query(collection(db, "macro_france_diagnostics"), orderBy("created_at", "desc"));
             const querySnapshot = await getDocs(q);
 
-            const mappedData: DiagnosticEntry[] = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                timestamp: doc.data().created_at,
-                userName: doc.data().user_name,
-                title: doc.data().title,
-                company: doc.data().company,
-                website: doc.data().website,
-                score: doc.data().score,
-                diagnostic: doc.data().diagnostic,
-                transcript: doc.data().transcript
+            const mappedData: DiagnosticEntry[] = querySnapshot.docs.map(d => ({
+                id: d.id,
+                timestamp: d.data().created_at,
+                userName: d.data().user_name,
+                title: d.data().title,
+                company: d.data().company,
+                website: d.data().website,
+                score: d.data().score,
+                diagnostic: d.data().diagnostic,
+                transcript: d.data().transcript
             }));
             setEntries(mappedData);
 
@@ -43,7 +41,11 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         } catch (e) {
             console.error("Error fetching data:", e);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchEntries();
+    }, [fetchEntries]);
 
     const deleteEntry = async (id: string) => {
         if (!confirm("Voulez-vous vraiment supprimer ce diagnostic de la base ?")) return;
@@ -59,25 +61,25 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const downloadCSV = () => {
         if (entries.length === 0) return;
 
-        const headers = ['Date', 'Nom', 'Titre', 'Entreprise', 'Site Web', 'Score', 'Synthese', 'Compte Rendu Detaille'];
-        const rows = entries.map(e => [
-            new Date(e.timestamp).toLocaleString(),
-            `"${e.userName.replace(/"/g, '""')}"`,
-            `"${e.title?.replace(/"/g, '""') || ''}"`,
-            `"${e.company.replace(/"/g, '""')}"`,
-            `"${e.website?.replace(/"/g, '""') || ''}"`,
-            e.score,
-            `"${e.diagnostic.replace(/"/g, '""')}"`,
-            `"${(e.transcript || '').replace(/"/g, '""')}"`
-        ]);
+        const rows = entries.map(e => ({
+            Date: sanitizeForCsv(new Date(e.timestamp).toLocaleString()),
+            Nom: sanitizeForCsv(e.userName ?? ''),
+            Titre: sanitizeForCsv(e.title ?? ''),
+            Entreprise: sanitizeForCsv(e.company ?? ''),
+            'Site Web': sanitizeForCsv(e.website ?? ''),
+            Score: e.score,
+            Synthese: sanitizeForCsv(e.diagnostic ?? ''),
+            'Compte Rendu Detaille': sanitizeForCsv(e.transcript ?? ''),
+        }));
 
-        const csvContent = [headers, ...rows].map(r => r.join(',')).join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const csvContent = Papa.unparse(rows, { quotes: true });
+        const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.setAttribute('href', url);
         link.setAttribute('download', `base_donnees_nexdeal_${new Date().toISOString().split('T')[0]}.csv`);
         link.click();
+        URL.revokeObjectURL(url);
     };
 
     return (
@@ -93,9 +95,11 @@ const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     </div>
                     <button
                         onClick={onClose}
+                        aria-label="Se déconnecter et fermer"
+                        title="Se déconnecter"
                         className="p-2 hover:bg-gray-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
                     >
-                        <X className="w-8 h-8" />
+                        <X className="w-8 h-8" aria-hidden="true" />
                     </button>
                 </div>
 

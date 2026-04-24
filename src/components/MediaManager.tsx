@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { storage } from '../lib/firebase';
 import { ref, listAll, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
-import { Upload, Trash2, Image, Link as LinkIcon, AlertCircle, Check, FileText, Play, X, Eye } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Link as LinkIcon, AlertCircle, Check, FileText, Play, X, Eye } from 'lucide-react';
 
 interface MediaFile {
     name: string;
@@ -24,11 +24,7 @@ const MediaManager: React.FC = () => {
     const [success, setSuccess] = useState<string | null>(null);
     const [viewingFile, setViewingFile] = useState<MediaFile | null>(null);
 
-    useEffect(() => {
-        fetchFiles();
-    }, []);
-
-    const fetchFiles = async () => {
+    const fetchFiles = useCallback(async () => {
         try {
             const listRef = ref(storage, 'macro_france_media');
             const res = await listAll(listRef);
@@ -45,9 +41,30 @@ const MediaManager: React.FC = () => {
             setFiles(fileData);
         } catch (err) {
             console.error('Error fetching files:', err);
-            // setError('Impossible de charger les fichiers. Vérifiez que le bucket "media" existe et est public.');
         }
+    }, []);
+
+    useEffect(() => {
+        fetchFiles();
+    }, [fetchFiles]);
+
+    const ALLOWED_MIME_TYPES = new Set([
+        'image/png',
+        'image/jpeg',
+        'image/webp',
+        'image/gif',
+        'video/mp4',
+        'application/pdf',
+    ]);
+    const MIME_TO_EXT: Record<string, string> = {
+        'image/png': 'png',
+        'image/jpeg': 'jpg',
+        'image/webp': 'webp',
+        'image/gif': 'gif',
+        'video/mp4': 'mp4',
+        'application/pdf': 'pdf',
     };
+    const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
     const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
         try {
@@ -60,19 +77,32 @@ const MediaManager: React.FC = () => {
             }
 
             const file = event.target.files[0];
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+
+            if (!ALLOWED_MIME_TYPES.has(file.type)) {
+                throw new Error(
+                    'Type de fichier non autorisé. Formats acceptés : PNG, JPEG, WEBP, GIF, MP4, PDF.'
+                );
+            }
+            if (file.size > MAX_SIZE_BYTES) {
+                throw new Error('Fichier trop volumineux (max 10 Mo).');
+            }
+
+            const ext = MIME_TO_EXT[file.type] ?? 'bin';
+            const fileName = `${crypto.randomUUID()}.${ext}`;
 
             const storageRef = ref(storage, `macro_france_media/${fileName}`);
-            await uploadBytes(storageRef, file);
+            await uploadBytes(storageRef, file, { contentType: file.type });
 
             setSuccess('Fichier téléchargé avec succès !');
             fetchFiles();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error uploading:', err);
-            setError(err.message || 'Erreur lors du téléchargement.');
+            const message = err instanceof Error ? err.message : 'Erreur lors du téléchargement.';
+            setError(message);
         } finally {
             setUploading(false);
+            // Reset the input so the same file can be selected again after an error.
+            event.target.value = '';
         }
     };
 
@@ -81,9 +111,10 @@ const MediaManager: React.FC = () => {
             const deleteRef = ref(storage, `macro_france_media/${fileName}`);
             await deleteObject(deleteRef);
             setFiles(files.filter(f => f.name !== fileName));
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error deleting:', err);
-            setError('Erreur lors de la suppression.');
+            const message = err instanceof Error ? err.message : 'Erreur lors de la suppression.';
+            setError(message);
         }
     };
 
@@ -97,14 +128,15 @@ const MediaManager: React.FC = () => {
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl w-full text-slate-200">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold flex items-center gap-2">
-                    <Image className="w-6 h-6 text-indigo-500" />
+                    <ImageIcon className="w-6 h-6 text-indigo-500" aria-hidden="true" />
                     Médiathèque (PNG, MP4, PDF)
                 </h2>
                 <div className="relative">
                     <input
                         type="file"
-                        accept="image/png,image/jpeg,video/mp4,application/pdf"
+                        accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,application/pdf"
                         onChange={uploadFile}
+                        aria-label="Uploader un fichier (max 10 Mo)"
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         disabled={uploading}
                     />
@@ -140,7 +172,7 @@ const MediaManager: React.FC = () => {
 
             {files.length === 0 ? (
                 <div className="text-center py-12 text-slate-500 bg-slate-950/50 rounded-xl border border-dashed border-slate-800">
-                    <Image className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                    <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-20" aria-hidden="true" />
                     <p>Aucun fichier dans la bibliothèque.</p>
                     <p className="text-xs mt-1">Uploadez des images, vidéos ou PDF pour les utiliser.</p>
                 </div>
@@ -199,7 +231,7 @@ const MediaManager: React.FC = () => {
                             <div className="p-2 text-xs text-slate-400 truncate border-t border-slate-800 flex items-center gap-2">
                                 {file.type === 'video' && <Play className="w-3 h-3 text-indigo-500 flex-shrink-0" />}
                                 {file.type === 'pdf' && <FileText className="w-3 h-3 text-red-500 flex-shrink-0" />}
-                                {file.type === 'image' && <Image className="w-3 h-3 text-emerald-500 flex-shrink-0" />}
+                                {file.type === 'image' && <ImageIcon className="w-3 h-3 text-emerald-500 flex-shrink-0" aria-hidden="true" />}
                                 <span className="truncate">{file.name}</span>
                             </div>
                         </div>

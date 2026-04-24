@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, X, Send, Bot, RefreshCcw, Briefcase, TrendingUp, AlertTriangle, ShieldCheck, PlayCircle, User, Globe, Building2 } from "lucide-react";
+import { MessageSquare, X, Bot, RefreshCcw, Briefcase, TrendingUp, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { db } from "@/lib/firebase";
@@ -174,8 +174,7 @@ export function CompetitivenessBot() {
     };
 
     const addMessage = (sender: "bot" | "user", text: React.ReactNode) => {
-        const id = Math.random().toString(36).substring(7);
-        setMessages(prev => [...prev, { id, sender, text }]);
+        setMessages(prev => [...prev, { id: crypto.randomUUID(), sender, text }]);
     };
 
     const processStep = (nextStep: number) => {
@@ -255,8 +254,8 @@ export function CompetitivenessBot() {
 
     const saveToFirebase = async () => {
         const ratio = (score / maxPossibleScore) * 100;
-        let diagnosisTitle = getDiagnosis(ratio).title;
-        let detailedReport = generateDetailedReport(ratio, sector, size);
+        const diagnosisTitle = getDiagnosis(ratio).title;
+        const detailedReport = generateDetailedReport(ratio, sector, size);
 
         try {
             await addDoc(collection(db, "macro_france_diagnostics"), {

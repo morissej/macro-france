@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 
 interface WaterfallData {
@@ -106,7 +106,7 @@ export function WaterfallChart({ data, totalLabel = "Total", onClickBar, height 
             .select(".domain").remove();
 
         // Bars
-        const bars = svg.selectAll(".bar")
+        svg.selectAll(".bar")
             .data(allBars)
             .enter()
             .append("rect")
@@ -122,7 +122,7 @@ export function WaterfallChart({ data, totalLabel = "Total", onClickBar, height 
             })
             .attr("rx", 4)
             .style("cursor", "pointer")
-            .on("click", (e, d) => {
+            .on("click", (_e, d) => {
                 if (onClickBar && d.id !== "total") onClickBar(d.id);
             })
             .on("mouseover", function () {

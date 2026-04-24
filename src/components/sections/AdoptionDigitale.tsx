@@ -1,10 +1,8 @@
 "use client";
 
-import React from "react";
-import * as d3 from "d3";
 import { datasets } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
-import { CheckCircle, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const PieGauge = ({ value, label, size = 160, color = "#0E7490" }: { value: number, label: string, size?: number, color?: string }) => {

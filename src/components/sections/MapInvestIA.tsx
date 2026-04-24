@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { datasets } from "@/lib/data";
 // Tooltip implemented as custom hover div

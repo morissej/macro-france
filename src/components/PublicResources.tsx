@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../lib/firebase';
 import { ref, listAll, getDownloadURL } from 'firebase/storage';
-import { FileText, Play, Image, X, ExternalLink } from 'lucide-react';
+import { FileText, Play, Image as ImageIcon, X } from 'lucide-react';
 
 interface MediaFile {
     name: string;
@@ -57,7 +57,7 @@ const PublicResources: React.FC = () => {
                 <h3 className="text-center text-slate-500 font-bold text-xs uppercase tracking-widest mb-8">Ressources & Documentation</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {displayFiles.map((file, idx) => (
+                    {displayFiles.map((file) => (
                         <button
                             key={file.name}
                             onClick={() => setViewingFile(file)}
@@ -107,7 +107,7 @@ const PublicResources: React.FC = () => {
                                 {/* Centered Play/View Icon */}
                                 <div className="mb-4 p-4 bg-white/10 backdrop-blur-md rounded-full text-white ring-1 ring-white/30 group-hover:scale-110 group-hover:bg-white/20 transition-all duration-300">
                                     {file.type === 'video' && <Play className="w-8 h-8 ml-1 fill-white/20" />}
-                                    {file.type === 'image' && <Image className="w-8 h-8" />}
+                                    {file.type === 'image' && <ImageIcon className="w-8 h-8" aria-hidden="true" />}
                                     {file.type === 'pdf' && <FileText className="w-8 h-8" />}
                                 </div>
 

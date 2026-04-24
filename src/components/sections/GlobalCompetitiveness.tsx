@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { BarChart3, TrendingDown, TrendingUp, Trophy, Globe, ArrowRight } from "lucide-react";
+import { BarChart3, TrendingDown, Trophy, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 // --- DATA ---
 const rankingHistory = [
@@ -77,7 +76,7 @@ function RankingView() {
                     <Trophy className="h-5 w-5 text-yellow-500" /> Classement IMD 2025
                 </h3>
                 <div className="space-y-3">
-                    {benchmark2025.map((item, idx) => (
+                    {benchmark2025.map((item) => (
                         <div
                             key={item.country}
                             className={`flex items-center justify-between p-3 rounded-xl border ${item.highlight ? "bg-white border-blue-500 shadow-md scale-105 z-10" : "bg-white/50 border-transparent text-slate-500"}`}
@@ -118,7 +117,7 @@ function RankingView() {
 
                     {/* Chart Area - Absolute Positioning with Fixed Height */}
                     <div className="absolute left-6 right-6 bottom-12 h-[250px] flex items-end justify-between px-4">
-                        {rankingHistory.map((pt, i) => {
+                        {rankingHistory.map((pt) => {
                             const maxRank = 35;
                             const minRank = 25;
                             // Reversing the logic: Higher rank (worse) = Taller bar
@@ -224,7 +223,16 @@ function TradeView() {
     )
 }
 
-function BarRow({ label, val, max, color, flag, suffix }: any) {
+interface BarRowProps {
+    label: string;
+    val: number;
+    max: number;
+    color: string;
+    flag?: React.ReactNode;
+    suffix?: string;
+}
+
+function BarRow({ label, val, max, color, flag, suffix }: BarRowProps) {
     const width = (Math.abs(val) / max) * 100;
     return (
         <div className="space-y-2">

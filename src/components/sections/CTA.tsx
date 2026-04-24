@@ -1,40 +1,10 @@
 "use client";
 
-import React from "react";
-import { useAppStore } from "@/lib/store";
-import { Button } from "@/components/ui/button";
-import { Download, Rocket, Info } from "lucide-react";
-
 interface CTAProps {
     onOpenAdmin?: () => void;
 }
 
 export function CTA({ onOpenAdmin }: CTAProps) {
-    const { openModal } = useAppStore();
-
-    const handleShare = async () => {
-        const shareData = {
-            title: 'Le Casse-tête de la Compétitivité',
-            text: 'Comprendre en 5 minutes pourquoi la compétitivité française est fragile — et où agir.',
-            url: window.location.href,
-        };
-
-        try {
-            if (navigator.share) {
-                await navigator.share(shareData);
-            } else {
-                await navigator.clipboard.writeText(window.location.href);
-                alert("Lien copié dans le presse-papier !");
-            }
-        } catch (err) {
-            console.error("Error sharing:", err);
-        }
-    };
-
-    const handleExport = () => {
-        window.print();
-    };
-
     return (
         <section id="cta" className="py-32 bg-slate-950 border-t border-slate-800 relative z-0">
             <div className="max-w-7xl mx-auto px-6 text-center space-y-8">
@@ -68,13 +38,13 @@ export function CTA({ onOpenAdmin }: CTAProps) {
                         Linkedin CEOs Pain Points
                     </a>
 
-                    <div
-                        role="button"
+                    <button
+                        type="button"
                         onClick={onOpenAdmin}
                         className="relative z-50 px-6 py-3 bg-slate-900 text-slate-500 font-bold rounded-xl text-[10px] uppercase tracking-widest border border-slate-800 hover:text-indigo-400 hover:border-indigo-900/50 transition-colors pointer-events-auto cursor-pointer select-none"
                     >
                         Portail Partenaires
-                    </div>
+                    </button>
                 </div>
             </div>
         </section>
